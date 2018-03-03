@@ -19,8 +19,9 @@ endfunction
 
 ""
 " Check whether a syntax file for a given {language} exists.
-function! s:syntax_available(language)
-  return !empty(globpath(&runtimepath, 'syntax/' . a:language . '.vim'))
+function! s:should_register(language, start_pattern, end_pattern)
+  return search(a:start_pattern, 'n')
+        \ && !empty(globpath(&runtimepath, 'syntax/' . a:language . '.vim'))
 endfunction
 
 ""
@@ -29,14 +30,16 @@ endfunction
 function! s:register_language(language, tag, ...)
   let attr_override = a:0 ? a:1 : ''
   let attr = !empty(attr_override) ? attr_override : s:attr('lang', a:language)
+  let start_pattern = '<' . a:tag . ' \_[^>]*' . attr . '\_[^>]*>'
+  let end_pattern = '</' . a:tag . '>'
 
-  if s:syntax_available(a:language)
+  if s:should_register(a:language, start_pattern, end_pattern)
     execute 'syntax include @' . a:language . ' syntax/' . a:language . '.vim'
     unlet! b:current_syntax
     execute 'syntax region vue_' . a:language
           \ 'keepend'
-          \ 'start=/<' . a:tag . ' \_[^>]*' . attr . '\_[^>]*>/'
-          \ 'end="</' . a:tag . '>"me=s-1'
+          \ 'start=/' . start_pattern . '/'
+          \ 'end="' . end_pattern . '"me=s-1'
           \ 'contains=@' . a:language . ',vueSurroundingTag'
           \ 'fold'
   endif
