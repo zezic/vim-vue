@@ -1,3 +1,5 @@
+# Modified version. Some preprocessors disable to increase performance.
+
 # vim-vue [![CircleCI](https://img.shields.io/circleci/project/github/posva/vim-vue.svg)](https://circleci.com/gh/posva/vim-vue)
 
 Vim syntax highlighting for [Vue

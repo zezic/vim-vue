@@ -46,16 +46,16 @@ function! s:register_language(language, tag, ...)
 endfunction
 
 if !exists("g:vue_disable_pre_processors") || !g:vue_disable_pre_processors
-  call s:register_language('less', 'style')
+  " call s:register_language('less', 'style')
   call s:register_language('pug', 'template', s:attr('lang', '\%(pug\|jade\)'))
-  call s:register_language('slm', 'template')
-  call s:register_language('handlebars', 'template')
-  call s:register_language('haml', 'template')
-  call s:register_language('typescript', 'script', '\%(lang=\("\|''\)[^\1]*\(ts\|typescript\)[^\1]*\1\|ts\)')
+  " call s:register_language('slm', 'template')
+  " call s:register_language('handlebars', 'template')
+  " call s:register_language('haml', 'template')
+  " call s:register_language('typescript', 'script', '\%(lang=\("\|''\)[^\1]*\(ts\|typescript\)[^\1]*\1\|ts\)')
   call s:register_language('coffee', 'script')
   call s:register_language('stylus', 'style')
   call s:register_language('sass', 'style')
-  call s:register_language('scss', 'style')
+  " call s:register_language('scss', 'style')
 endif
 
 syn region  vueSurroundingTag   contained start=+<\(script\|style\|template\)+ end=+>+ fold contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent
