@@ -16,12 +16,17 @@ endfunction
 " The order is important here, tags without attributes go last.
 " HTML is left out, it will be used when there is no match.
 let s:languages = [
+      \   { 'name': 'pug', 'pairs': ["<template lang='pug'", '</template>'] },
+      \   { 'name': 'sass', 'pairs': ["<style lang='sass' scoped", '</style>'] },
+      \   { 'name': 'javascript', 'pairs': ['<script', '</script>'] },
+      \   { 'name': 'sass', 'pairs': ["<style scoped lang='sass'", '</style>'] },
       \   { 'name': 'pug', 'pairs': ['<template lang="pug"', '</template>'] },
       \   { 'name': 'sass', 'pairs': ['<style lang="sass"', '</style>'] },
+      \   { 'name': 'sass', 'pairs': ["<style lang='sass'", '</style>'] },
       \   { 'name': 'sass', 'pairs': ['<style scoped lang="sass"', '</style>'] },
+      \   { 'name': 'sass', 'pairs': ['<style lang="sass" scoped', '</style>'] },
       \   { 'name': 'css', 'pairs': ['<style', '</style>'] },
-      \   { 'name': 'coffee', 'pairs': ['<script lang="coffee"', '</script>'] },
-      \   { 'name': 'javascript', 'pairs': ['<script', '</script>'] }
+      \   { 'name': 'coffee', 'pairs': ['<script lang="coffee"', '</script>'] }
       \ ]
 
 for s:language in s:languages
