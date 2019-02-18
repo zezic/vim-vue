@@ -1,66 +1,126 @@
 " Vim syntax file
-" Language: Vue.js
-" Maintainer: Eduardo San Martin Morote
+" Language:             Vue Singlefile Component
+" Maintainer:           Sergey Ukolov <zezic51@yandex.ru>
+" Repository:           https://github.com/zezic/vim-vue
+" Last Change:          2019 February 18
+"
 
-if exists("b:current_syntax")
-  finish
-endif
-
-runtime! syntax/html.vim
-syntax clear htmlTagName
-syntax match htmlTagName contained "\<[a-zA-Z0-9:-]*\>"
-unlet! b:current_syntax
-
-""
-" Get the pattern for a HTML {name} attribute with {value}.
-function! s:attr(name, value)
-  return a:name . '=\("\|''\)[^\1]*' . a:value . '[^\1]*\1'
-endfunction
-
-""
-" Check whether a syntax file for a given {language} exists.
-function! s:should_register(language, start_pattern, end_pattern)
-  return search(a:start_pattern, 'n')
-        \ && !empty(globpath(&runtimepath, 'syntax/' . a:language . '.vim'))
-endfunction
-
-""
-" Register {language} for a given {tag}. If [attr_override] is given and not
-" empty, it will be used for the attribute pattern.
-function! s:register_language(language, tag, ...)
-  let attr_override = a:0 ? a:1 : ''
-  let attr = !empty(attr_override) ? attr_override : s:attr('lang', a:language)
-  let start_pattern = '<' . a:tag . ' \_[^>]*' . attr . '\_[^>]*>'
-  let end_pattern = '</' . a:tag . '>'
-
-  if s:should_register(a:language, start_pattern, end_pattern)
-    execute 'syntax include @' . a:language . ' syntax/' . a:language . '.vim'
-    unlet! b:current_syntax
-    execute 'syntax region vue_' . a:language
-          \ 'keepend'
-          \ 'start=/' . start_pattern . '/'
-          \ 'end="' . end_pattern . '"me=s-1'
-          \ 'contains=@' . a:language . ',vueSurroundingTag'
-          \ 'fold'
+" quit when a syntax file was already loaded
+if !exists("main_syntax")
+  if exists("b:current_syntax")
+    finish
   endif
-endfunction
-
-if !exists("g:vue_disable_pre_processors") || !g:vue_disable_pre_processors
-  " call s:register_language('less', 'style')
-  call s:register_language('pug', 'template', s:attr('lang', '\%(pug\)'))
-  " call s:register_language('slm', 'template')
-  " call s:register_language('handlebars', 'template')
-  " call s:register_language('haml', 'template')
-  " call s:register_language('typescript', 'script', '\%(lang=\("\|''\)[^\1]*\(ts\|typescript\)[^\1]*\1\|ts\)')
-  " call s:register_language('coffee', 'script')
-  " call s:register_language('stylus', 'style')
-  call s:register_language('sass', 'style')
-  " call s:register_language('scss', 'style')
+  let main_syntax = 'vue'
 endif
 
-syn region  vueSurroundingTag   contained start=+<\(script\|style\|template\)+ end=+>+ fold contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent
-syn keyword htmlSpecialTagName  contained template
-syn keyword htmlArg             contained scoped ts
-syn match   htmlArg "[@v:][-:.0-9_a-z]*\>" contained
+let s:cpo_save = &cpo
+set cpo&vim
+
+syntax spell toplevel
+
+syn case ignore
+
+" mark illegal characters
+syn match vueError "[<>&]"
+
+
+" tags
+syn region  vueString   contained start=+"+ end=+"+
+syn region  vueString   contained start=+'+ end=+'+
+syn region  vueEndTag             start=+</+      end=+>+ contains=vueTagN,vueTagError
+syn region  vueTag                start=+<[^/]+   end=+>+ fold contains=vueTagN,vueString,vueArg,vueValue,vueTagError,@vueArgCluster
+syn match   vueTagN     contained +<\s*[-a-zA-Z0-9]\++hs=s+1 contains=vueTagName,vueSpecialTagName,@vueTagNameCluster
+syn match   vueTagN     contained +</\s*[-a-zA-Z0-9]\++hs=s+2 contains=vueTagName,vueSpecialTagName,@vueTagNameCluster
+syn match   vueTagError contained "[^>]<"ms=s+1
+
+
+" tag names
+" syn keyword vueTagName contained template script style
+
+" legal arg names
+syn keyword vueArg contained lang scoped
+
+" Comments
+syn region vueComment                start=+<!--+    end=+--\s*>+ contains=@Spell
+syn region vueComment                start=+<!+      end=+>+   contains=vueCommentPart,vueCommentError,@Spell
+syn match  vueCommentError contained "[^><!]"
+syn region vueCommentPart  contained start=+--+      end=+--\s*+  contains=@Spell
+
+if !exists("vue_no_rendering")
+  " rendering
+  syn cluster vueTop contains=@Spell,vueTag,vueEndTag,vueComment,javaScript,@vuePreproc
+  syn match vueLeadingSpace "^\s\+" contained
+endif
+
+syn keyword vueSpecialTagName  contained template script style
+
+
+
+" Pug
+syn include @vuePug syntax/pug.vim
+unlet b:current_syntax
+syn region  pug start=+<template lang='pug'\_[^>]*>+ keepend end=+</template\_[^>]*>+me=s-1 contains=@vuePug,vueTemplateTag,@vuePreproc
+syn region  vueTemplateTag     contained start=+<template+ end=+>+ fold contains=vueTagN,vueString,vueArg,vueValue,vueTagError
+hi def link vueTemplateTag vueTag
+
+syn cluster vuePug      add=@vuePreproc
+
+" JavaScript
+syn include @vueJavaScript syntax/javascript.vim
+unlet b:current_syntax
+syn region  javaScript start=+<script\_[^>]*>+ keepend end=+</script\_[^>]*>+me=s-1 contains=@vueJavaScript,vueScriptTag,@vuePreproc
+syn region  vueScriptTag     contained start=+<script+ end=+>+ fold contains=vueTagN,vueString,vueArg,vueValue,vueTagError
+hi def link vueScriptTag vueTag
+
+syn cluster vueJavaScript      add=@vuePreproc
+
+" CSS
+syn include @vueCss syntax/css.vim
+unlet b:current_syntax
+syn region cssStyle start=+<style>+ keepend end=+</style>+ contains=@vueCss,vueTag,vueEndTag,@vuePreproc
+syn region cssStyle start=+<style scoped>+ keepend end=+</style>+ contains=@vueCss,vueTag,vueEndTag,@vuePreproc
+
+" Sass
+syn include @vueSass syntax/sass.vim
+unlet b:current_syntax
+syn region sassStyle start=+<style lang='sass+ keepend end=+</style>+ contains=@vueSass,vueTag,vueEndTag,@vuePreproc
+syn region sassStyle start=+<style scoped lang='sass+ keepend end=+</style>+ contains=@vueSass,vueTag,vueEndTag,@vuePreproc
+
+
+if main_syntax == "vue"
+  " synchronizing (does not always work if a comment includes legal
+  " vue tags, but doing it right would mean to always start
+  " at the first line, which is too slow)
+  syn sync match vueHighlight groupthere NONE "<[/a-zA-Z]"
+  syn sync match vueHighlight groupthere javaScript "<script"
+  syn sync match vueHighlightSkip "^.*['\"].*$"
+  syn sync minlines=10
+endif
+
+" The default highlighting.
+hi def link vueTag                     Function
+hi def link vueEndTag                  Identifier
+hi def link vueArg                     Type
+hi def link vueTagName                 htmlStatement
+hi def link vueSpecialTagName          Exception
+hi def link vueValue                     String
+
+hi def link vueString             String
+hi def link vueComment            Comment
+hi def link vueCommentPart        Comment
+hi def link vueValue              String
+hi def link vueCommentError       htmlError
+hi def link vueTagError           htmlError
+hi def link vueError              Error
+
+hi def link javaScript             Special
 
 let b:current_syntax = "vue"
+
+if main_syntax == 'vue'
+  unlet main_syntax
+endif
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
+" vim: ts=2
