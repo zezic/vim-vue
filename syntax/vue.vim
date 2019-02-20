@@ -47,7 +47,7 @@ syn match  vueCommentError contained "[^><!]"
 syn region vueCommentPart  contained start=+--+      end=+--\s*+  contains=@Spell
 
 " rendering
-syn cluster vueTop contains=@Spell,vueTag,vueEndTag,vueComment,@vuePreproc
+syn cluster vueTop contains=@Spell,vueTag,vueEndTag,vueComment
 syn match vueLeadingSpace "^\s\+" contained
 
 syn keyword vueSpecialTagName  contained template script style
@@ -57,37 +57,23 @@ syn keyword vueSpecialTagName  contained template script style
 " Pug
 syn include @vuePug syntax/pug.vim
 unlet b:current_syntax
-syn region  pug start=+<template lang='pug\_[^>]*>+ keepend end=+</template\_[^>]*>+me=s-1 contains=@vuePug,vueTemplateTag,@vuePreproc
+syn region  pug start=+<template lang='pug\_[^>]*>+ keepend end=+</template\_[^>]*>+me=s-1 contains=@vuePug,vueTemplateTag
 syn region  vueTemplateTag     contained start=+<template+ end=+>+ fold contains=vueTagN,vueString,vueArg,vueValue,vueTagError
 hi def link vueTemplateTag vueTag
-syn cluster vuePug      add=@vuePreproc
 
 " JavaScript
 syn include @vueJavaScript syntax/javascript.vim
 unlet b:current_syntax
-syn region  javaScript start=+<script\_[^>]*>+ keepend end=+</script\_[^>]*>+me=s-1 contains=@vueJavaScript,vueScriptTag,@vuePreproc
+syn region  javaScript start=+<script\_[^>]*>+ keepend end=+</script\_[^>]*>+me=s-1 contains=@vueJavaScript,vueScriptTag
 syn region  vueScriptTag     contained start=+<script+ end=+>+ fold contains=vueTagN,vueString,vueArg,vueValue,vueTagError
 hi def link vueScriptTag vueTag
-syn cluster vueJavaScript      add=@vuePreproc
-
-" CSS
-" syn include @vueCss syntax/css.vim
-" unlet b:current_syntax
-" syn region cssStyle start=+<style>+ keepend end=+</style>+ contains=@vueCss,vueTag,vueEndTag,@vuePreproc
-" syn region cssStyle start=+<style scoped>+ keepend end=+</style>+ contains=@vueCss,vueTag,vueEndTag,@vuePreproc
-" syn cluster vueCss      add=@vuePreproc
-
-" " Sass
-" syn include @vueSass syntax/sass.vim
-" unlet b:current_syntax
-" syn region sassStyle start=+<style lang='sass+ keepend end=+</style>+ contains=@vueSass,vueTag,vueEndTag,@vuePreproc
-" syn cluster vueSass      add=@vuePreproc
 
 " SCSS
 syn include @vueScss syntax/scss.vim
 unlet b:current_syntax
-syn region scssStyle start=+<style lang='scss+ keepend end=+</style>+ contains=@vueScss,vueTag,vueEndTag,@vuePreproc
-syn cluster vueScss      add=@vuePreproc
+syn region  scss start=+<style lang='scss\_[^>]*>+ keepend end=+</style\_[^>]*>+me=s-1 contains=@vueScss,vueScssTag
+syn region  vueScssTag     contained start=+<style+ end=+>+ fold contains=vueTagN,vueString,vueArg,vueValue,vueTagError
+hi def link vueScssTag vueTag
 
 if main_syntax == "vue"
   " synchronizing (does not always work if a comment includes legal
@@ -96,10 +82,7 @@ if main_syntax == "vue"
   syn sync match vueHighlight groupthere NONE "<[/a-zA-Z]"
   syn sync match vueHighlight groupthere pug "<template lang='pug"
   syn sync match vueHighlight groupthere javaScript "<script"
-  " syn sync match vueHighlight groupthere cssStyle "<style>"
-  " syn sync match vueHighlight groupthere cssStyle "<style scoped>"
-  " syn sync match vueHighlight groupthere sassStyle "<style lang='sass"
-  syn sync match vueHighlight groupthere scssStyle "<style lang='scss"
+  syn sync match vueHighlight groupthere scss "<style lang='scss"
   syn sync match vueHighlightSkip "^.*['\"].*$"
   syn sync minlines=10
 endif
